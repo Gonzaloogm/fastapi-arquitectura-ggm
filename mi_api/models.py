@@ -1,11 +1,12 @@
 from sqlalchemy import Column, Integer, String, Float, Boolean
 from database import Base
 
-class Item(Base):
-    __tablename__ = "items"
+class Coche(Base):
+    __tablename__ = "coches"
 
     id = Column(Integer, primary_key=True, index=True)
-    nombre = Column(String, index=True)
-    descripcion = Column(String, nullable=True)
+    marca = Column(String, index=True)
+    modelo = Column(String, index=True)
+    anio = Column(Integer)
     precio = Column(Float)
-    en_stock = Column(Boolean, default=True)
+    disponible = Column(Boolean, default=True)

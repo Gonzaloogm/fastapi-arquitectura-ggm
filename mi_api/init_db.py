@@ -1,6 +1,6 @@
 import asyncio
 from database import engine, Base
-from models import Item
+from models import Coche
 
 async def init_db():
     async with engine.begin() as conn:

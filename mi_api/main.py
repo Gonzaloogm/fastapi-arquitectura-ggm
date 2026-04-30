@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from models import Item
+from models import Coche
 from database import engine
 from database import Base
 from dependencies import get_db
@@ -9,57 +9,58 @@ from pydantic import BaseModel
 
 app = FastAPI()
 
-class ItemCreate(BaseModel):
-    nombre: str
-    descripcion: str | None = None
+class CocheCreate(BaseModel):
+    marca: str
+    modelo: str
+    anio: int
     precio: float
-    en_stock: bool = True
+    disponible: bool = True
 
-class ItemResponse(ItemCreate):
+class CocheResponse(CocheCreate):
     id: int
 
     class Config:
         orm_mode = True
 
-@app.post("/items/", response_model=ItemResponse)
-async def create_item(item: ItemCreate, db: AsyncSession = Depends(get_db)):
-    db_item = Item(**item.dict())
-    db.add(db_item)
+@app.post("/coches/", response_model=CocheResponse)
+async def create_coche(coche: CocheCreate, db: AsyncSession = Depends(get_db)):
+    db_coche = Coche(**coche.dict())
+    db.add(db_coche)
     await db.commit()
-    await db.refresh(db_item)
-    return db_item
+    await db.refresh(db_coche)
+    return db_coche
 
-@app.get("/items/{item_id}", response_model=ItemResponse)
-async def read_item(item_id: int, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(Item).where(Item.id == item_id))
-    item = result.scalar_one_or_none()
-    if not item:
-        raise HTTPException(status_code=404, detail="Item no encontrado")
-    return item
+@app.get("/coches/{coche_id}", response_model=CocheResponse)
+async def read_coche(coche_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Coche).where(Coche.id == coche_id))
+    coche = result.scalar_one_or_none()
+    if not coche:
+        raise HTTPException(status_code=404, detail="Coche no encontrado")
+    return coche
 
-@app.get("/items/", response_model=list[ItemResponse])
-async def list_items(db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(Item))
+@app.get("/coches/", response_model=list[CocheResponse])
+async def list_coches(db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Coche))
     return result.scalars().all()
 
-@app.put("/items/{item_id}", response_model=ItemResponse)
-async def update_item(item_id: int, item: ItemCreate, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(Item).where(Item.id == item_id))
-    db_item = result.scalar_one_or_none()
-    if not db_item:
-        raise HTTPException(status_code=404, detail="Item no encontrado")
-    for key, value in item.dict().items():
-        setattr(db_item, key, value)
+@app.put("/coches/{coche_id}", response_model=CocheResponse)
+async def update_coche(coche_id: int, coche: CocheCreate, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Coche).where(Coche.id == coche_id))
+    db_coche = result.scalar_one_or_none()
+    if not db_coche:
+        raise HTTPException(status_code=404, detail="Coche no encontrado")
+    for key, value in coche.dict().items():
+        setattr(db_coche, key, value)
     await db.commit()
-    await db.refresh(db_item)
-    return db_item
+    await db.refresh(db_coche)
+    return db_coche
 
-@app.delete("/items/{item_id}")
-async def delete_item(item_id: int, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(Item).where(Item.id == item_id))
-    item = result.scalar_one_or_none()
-    if not item:
-        raise HTTPException(status_code=404, detail="Item no encontrado")
-    await db.delete(item)
+@app.delete("/coches/{coche_id}")
+async def delete_coche(coche_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Coche).where(Coche.id == coche_id))
+    coche = result.scalar_one_or_none()
+    if not coche:
+        raise HTTPException(status_code=404, detail="Coche no encontrado")
+    await db.delete(coche)
     await db.commit()
-    return {"mensaje": "Item eliminado"}
+    return {"mensaje": "Coche eliminado"}
